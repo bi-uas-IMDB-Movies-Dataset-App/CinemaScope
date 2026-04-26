@@ -1,0 +1,31 @@
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+*.iml
+*.ipr
+*.iws
+
+# Android
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/.gradle
+**/android/captures/
+**/android/key.jks
+
+# iOS
+**/ios/.symlinks/
+**/ios/Flutter/.last_build_id
+
+# Env
+assets/.env
+!assets/.env_example
+
+# IDE
+.idea/
+.vscode/
+*.swp

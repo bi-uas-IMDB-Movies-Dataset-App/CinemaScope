@@ -1,0 +1,59 @@
+Resolving dependencies...
+Downloading packages...
+  characters 1.4.0 (1.4.1 available)
+  fl_chart 0.69.2 (1.2.0 available)
+  flutter_dotenv 5.2.1 (6.0.1 available)
+  flutter_lints 4.0.0 (6.0.0 available)
+  google_fonts 6.3.3 (8.0.2 available)
+  intl 0.19.0 (0.20.2 available)
+  lints 4.0.0 (6.1.0 available)
+  matcher 0.12.17 (0.12.19 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.17.0 (1.18.2 available)
+  native_toolchain_c 0.17.6 (0.18.0 available)
+  test_api 0.7.7 (0.7.11 available)
+  vector_math 2.2.0 (2.3.0 available)
+Got dependencies!
+13 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleRelease'...                        
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Settings file 'C:\Users\MyBook Hype AMD\ProgramFullStack\testing_projek_gacor\cinemascope\android\settings.gradle.kts' line: 19
+
+* What went wrong:
+Error resolving plugin [id: 'dev.flutter.flutter-plugin-loader', version: '1.0.0']
+> A problem occurred configuring project ':gradle'.
+   > Multiple build operations failed.
+         Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\02e670d718688876be362eb688b5ec28\metadata.bin
+         Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\6f026ac03d3e3d354129769e9c0604d7\metadata.bin
+         Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\7311defc47abb5833782bd5c5a9e1492\metadata.bin
+         Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\80160c7b92e29ee419337a6cc79dbe59\metadata.bin
+         Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\29c347bdfbb20b3a79c363ac5eca133f\metadata.bin
+         Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\635a0302314948a3bfd012dfd496df4e\metadata.bin
+         Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\0c05b775f50eb76b7f955e1cc25bd2fb\metadata.bin
+         Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\91e1b4bbdf423013ae02f581593fe4c0\metadata.bin
+         Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\1555114a37bd73c7d834b1ff1acbe388\metadata.bin
+         Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\38b8b586e59b9c145d826a01e2689eee\metadata.bin
+      > Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\02e670d718688876be362eb688b5ec28\metadata.bin
+      > Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\6f026ac03d3e3d354129769e9c0604d7\metadata.bin
+      > Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\7311defc47abb5833782bd5c5a9e1492\metadata.bin
+      > Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\80160c7b92e29ee419337a6cc79dbe59\metadata.bin
+      > Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\29c347bdfbb20b3a79c363ac5eca133f\metadata.bin
+      > Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\635a0302314948a3bfd012dfd496df4e\metadata.bin
+      > Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\0c05b775f50eb76b7f955e1cc25bd2fb\metadata.bin
+      > Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\91e1b4bbdf423013ae02f581593fe4c0\metadata.bin
+      > Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\1555114a37bd73c7d834b1ff1acbe388\metadata.bin
+      > Could not read workspace metadata from C:\Users\MyBook Hype AMD\.gradle\caches\8.9\transforms\38b8b586e59b9c145d826a01e2689eee\metadata.bin
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 39s
+Running Gradle task 'assembleRelease'...                          100.6s
+Gradle task assembleRelease failed with exit code 1
