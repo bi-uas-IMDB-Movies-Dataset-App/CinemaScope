@@ -50,22 +50,33 @@ class _MoviesPageState extends State<MoviesPage> {
       backgroundColor: CinemaColors.bg,
       appBar: AppBar(
         title: _searchActive
-            ? TextField(
-                controller: _searchCtrl,
-                autofocus: true,
-                style: const TextStyle(color: CinemaColors.textPrimary),
-                cursorColor: CinemaColors.gold,
-                decoration: const InputDecoration(
-                  hintText: 'Search movies...',
-                  hintStyle: TextStyle(color: CinemaColors.textMuted),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                onChanged: (q) => prov.search(q),
+            ? Row(
+                children: [
+                  const Text(
+                    'CinemaScope',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchCtrl,
+                      autofocus: true,
+                      style: const TextStyle(color: CinemaColors.textPrimary),
+                      cursorColor: CinemaColors.gold,
+                      decoration: const InputDecoration(
+                        hintText: 'Search movies...',
+                        hintStyle: TextStyle(color: CinemaColors.textMuted),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      onChanged: (q) => prov.search(q),
+                    ),
+                  ),
+                ],
               )
-            : const Text('CinemaScope'),
+            : const Text('CinemaScope • Movies'),
         actions: [
           IconButton(
             icon: Icon(

@@ -67,23 +67,31 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       children: [
                         Container(
-                          width: 80,
-                          height: 80,
+                          width: 96,
+                          height: 96,
                           decoration: BoxDecoration(
-                            color: CinemaColors.gold,
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: CinemaColors.gold.withValues(alpha: 0.4),
+                                color: CinemaColors.gold.withValues(alpha: 0.35),
                                 blurRadius: 24,
-                                offset: const Offset(0, 8),
+                                offset: const Offset(0, 10),
                               ),
                             ],
                           ),
-                          child: const Icon(
-                            Icons.movie_filter_rounded,
-                            size: 44,
-                            color: Colors.black,
+                          clipBehavior: Clip.antiAlias,
+                          child: Image.asset(
+                            'assets/cinemascope.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: CinemaColors.gold,
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                Icons.movie_filter_rounded,
+                                size: 44,
+                                color: Colors.black,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),

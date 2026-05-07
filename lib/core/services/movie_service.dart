@@ -14,6 +14,17 @@ class MovieService {
     return (data as List).map((e) => Movie.fromMap(e)).toList();
   }
 
+  /// Lightweight dataset for client-side OLAP interactions.
+  Future<List<Movie>> fetchOlapMovies({int limit = 1000}) async {
+    final data = await _sb.client
+        .from('fact_movies')
+        .select(
+            'movie_id, series_title, released_year, certificate, runtime_min, genre, imdb_rating, meta_score, no_of_votes, gross, director_name, era, rating_category, overview')
+        .order('imdb_rating', ascending: false)
+        .limit(limit);
+    return (data as List).map((e) => Movie.fromMap(e)).toList();
+  }
+
   /// Search by title
   Future<List<Movie>> searchMovies(String query) async {
     final data = await _sb.client
@@ -101,8 +112,7 @@ class MovieService {
       'total': total,
       'avgRating': avgRating,
       'byDecade': Map.fromEntries(
-        (byDecade.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))
-      ),
+          (byDecade.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))),
       'byCategory': byCategory,
       'topGenres': topGenres.take(8).toList(),
       'topGrossing': topGrossing,

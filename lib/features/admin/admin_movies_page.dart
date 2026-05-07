@@ -88,13 +88,7 @@ class _AdminMoviesPageState extends State<AdminMoviesPage> {
     return Scaffold(
       backgroundColor: CinemaColors.bg,
       appBar: AppBar(
-        title: const Text('Manage Movies'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => provider.loadMovies(search: _searchCtrl.text),
-          ),
-        ],
+        title: const Text('CinemaScope • Manage Movies'),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openEditor(),
@@ -167,33 +161,41 @@ class _AdminMoviesPageState extends State<AdminMoviesPage> {
                                     border: Border.all(color: CinemaColors.divider),
                                   ),
                                   child: ListTile(
+                                    isThreeLine: true,
                                     title: Text(
                                       movie.seriesTitle,
                                       style: const TextStyle(
                                         color: CinemaColors.textPrimary,
                                         fontWeight: FontWeight.w600,
                                       ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                     subtitle: Text(
                                       '#${movie.movieId}  ${movie.releasedYear ?? '-'}  ${movie.imdbRating?.toStringAsFixed(1) ?? '-'}',
                                       style: const TextStyle(color: CinemaColors.textMuted),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    trailing: Wrap(
-                                      spacing: 4,
-                                      children: [
-                                        IconButton(
-                                          tooltip: 'Edit',
-                                          icon: const Icon(Icons.edit_rounded,
-                                              color: CinemaColors.gold),
-                                          onPressed: () => _openEditor(movie: movie),
-                                        ),
-                                        IconButton(
-                                          tooltip: 'Delete',
-                                          icon: const Icon(Icons.delete_rounded,
-                                              color: CinemaColors.accent),
-                                          onPressed: () => _deleteMovie(movie),
-                                        ),
-                                      ],
+                                    trailing: SizedBox(
+                                      width: 92,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          IconButton(
+                                            tooltip: 'Edit',
+                                            icon: const Icon(Icons.edit_rounded,
+                                                color: CinemaColors.gold),
+                                            onPressed: () => _openEditor(movie: movie),
+                                          ),
+                                          IconButton(
+                                            tooltip: 'Delete',
+                                            icon: const Icon(Icons.delete_rounded,
+                                                color: CinemaColors.accent),
+                                            onPressed: () => _deleteMovie(movie),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 );

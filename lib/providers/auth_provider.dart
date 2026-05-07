@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../core/services/auth_service.dart';
 import '../models/profile.dart';
 
@@ -83,16 +84,22 @@ class AuthProvider extends ChangeNotifier {
     required String userId,
     required String role,
   }) async {
+    final existing = users.where((u) => u.id == userId).cast<Profile?>().firstWhere(
+          (u) => u != null,
+          orElse: () => null,
+        );
+    if (existing != null && existing.role.toLowerCase() == role.toLowerCase()) {
+      return null;
+    }
+
     isRoleUpdating = true;
     error = null;
     notifyListeners();
     try {
       await _service.updateRole(userId, role);
       await loadUsers();
-      if (profile?.id == userId) {
-        profile = profile == null
-            ? null
-            : Profile(id: profile!.id, email: profile!.email, role: role);
+      if (profile?.id == userId && profile != null) {
+        profile = Profile(id: profile!.id, email: profile!.email, role: role);
       }
       return null;
     } catch (e) {
@@ -101,6 +108,71 @@ class AuthProvider extends ChangeNotifier {
       return msg;
     } finally {
       isRoleUpdating = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> createUserProfile({
+    required String userId,
+    required String email,
+    required String role,
+  }) async {
+    isUsersLoading = true;
+    error = null;
+    notifyListeners();
+    try {
+      await _service.createProfile(userId: userId.trim(), email: email.trim().toLowerCase(), role: role);
+      await loadUsers();
+      return null;
+    } catch (e) {
+      final msg = e.toString();
+      error = msg;
+      return msg;
+    } finally {
+      isUsersLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> updateUserProfile({
+    required String userId,
+    required String email,
+    required String role,
+  }) async {
+    isUsersLoading = true;
+    error = null;
+    notifyListeners();
+    try {
+      await _service.updateProfile(userId: userId, email: email.trim().toLowerCase(), role: role);
+      await loadUsers();
+      if (profile?.id == userId && profile != null) {
+        profile = Profile(id: profile!.id, email: email.trim().toLowerCase(), role: role);
+      }
+      return null;
+    } catch (e) {
+      final msg = e.toString();
+      error = msg;
+      return msg;
+    } finally {
+      isUsersLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> deleteUserProfile(String userId) async {
+    isUsersLoading = true;
+    error = null;
+    notifyListeners();
+    try {
+      await _service.deleteProfile(userId);
+      await loadUsers();
+      return null;
+    } catch (e) {
+      final msg = e.toString();
+      error = msg;
+      return msg;
+    } finally {
+      isUsersLoading = false;
       notifyListeners();
     }
   }

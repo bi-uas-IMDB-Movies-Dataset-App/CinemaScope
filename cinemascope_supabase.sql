@@ -1934,3 +1934,109 @@ END $$;
 
 -- 6) Verifikasi cepat
 -- SELECT id, email, role, created_at FROM public.profiles ORDER BY created_at DESC;
+
+-- SESSION 3
+-- ============================================================
+-- CinemaScope Admin Policy Bundle (ONE-RUN)
+-- Jalankan sekali di Supabase SQL Editor
+-- ============================================================
+
+BEGIN;
+
+-- 1) Helper function: cek user login adalah admin
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    WHERE p.id = auth.uid()
+      AND lower(p.role) = 'admin'
+  );
+$$;
+
+-- 2) Profiles: admin bisa lihat semua user
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
+CREATE POLICY "Admins can view all profiles"
+ON public.profiles
+FOR SELECT
+USING (public.is_admin());
+
+-- 3) Profiles: admin bisa update semua user
+DROP POLICY IF EXISTS "Admins can update all profiles" ON public.profiles;
+CREATE POLICY "Admins can update all profiles"
+ON public.profiles
+FOR UPDATE
+USING (public.is_admin())
+WITH CHECK (public.is_admin());
+
+-- 4) Profiles: admin bisa delete semua user
+DROP POLICY IF EXISTS "Admins can delete all profiles" ON public.profiles;
+CREATE POLICY "Admins can delete all profiles"
+ON public.profiles
+FOR DELETE
+USING (public.is_admin());
+
+-- 5) (Opsional disarankan) pastikan nilai role valid
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'profiles_role_check'
+  ) THEN
+    ALTER TABLE public.profiles
+      ADD CONSTRAINT profiles_role_check
+      CHECK (lower(role) IN ('admin', 'viewer'));
+  END IF;
+END $$;
+
+COMMIT;
+
+-- ============================================================
+-- Verifikasi cepat
+-- ============================================================
+SELECT policyname, cmd, permissive, qual, with_check
+FROM pg_policies
+WHERE schemaname = 'public'
+  AND tablename = 'profiles'
+ORDER BY policyname;
+-- ============================================================
+-- VIEWER MOVIE FEEDBACK (user personal rating/metascore)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.viewer_movie_feedback (
+  id                BIGSERIAL PRIMARY KEY,
+  user_id           UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  movie_id          INTEGER NOT NULL REFERENCES public.fact_movies(movie_id) ON DELETE CASCADE,
+  viewer_rating     NUMERIC(3,1) NOT NULL,
+  viewer_metascore  INTEGER NOT NULL,
+  created_at        TIMESTAMPTZ DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (user_id, movie_id),
+  CONSTRAINT viewer_rating_range CHECK (viewer_rating >= 0 AND viewer_rating <= 10),
+  CONSTRAINT viewer_metascore_range CHECK (viewer_metascore >= 0 AND viewer_metascore <= 100)
+);
+
+ALTER TABLE public.viewer_movie_feedback ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own viewer feedback" ON public.viewer_movie_feedback;
+CREATE POLICY "Users can view own viewer feedback" ON public.viewer_movie_feedback
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own viewer feedback" ON public.viewer_movie_feedback;
+CREATE POLICY "Users can insert own viewer feedback" ON public.viewer_movie_feedback
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own viewer feedback" ON public.viewer_movie_feedback;
+CREATE POLICY "Users can update own viewer feedback" ON public.viewer_movie_feedback
+  FOR UPDATE USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own viewer feedback" ON public.viewer_movie_feedback;
+CREATE POLICY "Users can delete own viewer feedback" ON public.viewer_movie_feedback
+  FOR DELETE USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_viewer_feedback_user ON public.viewer_movie_feedback(user_id);
+CREATE INDEX IF NOT EXISTS idx_viewer_feedback_movie ON public.viewer_movie_feedback(movie_id);

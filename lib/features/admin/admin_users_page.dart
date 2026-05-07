@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:provider/provider.dart';
+
 import '../../core/constants/cinema_colors.dart';
 import '../../models/profile.dart';
 import '../../providers/auth_provider.dart';
@@ -24,6 +26,10 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     final auth = context.read<AuthProvider>();
     final selfId = auth.profile?.id;
 
+    if (user.role.toLowerCase() == nextRole.toLowerCase()) {
+      return;
+    }
+
     if (selfId == user.id && nextRole != 'admin') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -44,6 +50,171 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     );
   }
 
+  Future<void> _showCreateDialog() async {
+    final auth = context.read<AuthProvider>();
+    final idCtl = TextEditingController();
+    final emailCtl = TextEditingController();
+    String role = 'viewer';
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: CinemaColors.card,
+          title: const Text('Create User Profile', style: TextStyle(color: CinemaColors.textPrimary)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _InputField(controller: idCtl, label: 'User ID (UUID)'),
+                const SizedBox(height: 10),
+                _InputField(controller: emailCtl, label: 'Email'),
+                const SizedBox(height: 10),
+                _RoleField(
+                  value: role,
+                  onChanged: (v) => setState(() => role = v),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Create')),
+          ],
+        ),
+      ),
+    );
+
+    if (ok != true) return;
+    if (idCtl.text.trim().isEmpty || emailCtl.text.trim().isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User ID and email are required'), backgroundColor: CinemaColors.accent),
+      );
+      return;
+    }
+
+    final error = await auth.createUserProfile(
+      userId: idCtl.text,
+      email: emailCtl.text,
+      role: role,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error ?? 'User profile created'),
+        backgroundColor: error == null ? CinemaColors.success : CinemaColors.accent,
+      ),
+    );
+  }
+
+  Future<void> _showEditDialog(Profile user) async {
+    final auth = context.read<AuthProvider>();
+    final emailCtl = TextEditingController(text: user.email);
+    String role = user.role.toLowerCase() == 'admin' ? 'admin' : 'viewer';
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: CinemaColors.card,
+          title: const Text('Edit User', style: TextStyle(color: CinemaColors.textPrimary)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(user.id, style: const TextStyle(color: CinemaColors.textMuted, fontSize: 11)),
+                const SizedBox(height: 10),
+                _InputField(controller: emailCtl, label: 'Email'),
+                const SizedBox(height: 10),
+                _RoleField(
+                  value: role,
+                  onChanged: (v) => setState(() => role = v),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Save')),
+          ],
+        ),
+      ),
+    );
+
+    if (ok != true) return;
+
+    final selfId = auth.profile?.id;
+    if (selfId == user.id && role != 'admin') {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You cannot demote your own admin account while logged in.'),
+          backgroundColor: CinemaColors.accent,
+        ),
+      );
+      return;
+    }
+
+    final error = await auth.updateUserProfile(
+      userId: user.id,
+      email: emailCtl.text,
+      role: role,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error ?? 'User updated'),
+        backgroundColor: error == null ? CinemaColors.success : CinemaColors.accent,
+      ),
+    );
+  }
+
+  Future<void> _deleteUser(Profile user) async {
+    final auth = context.read<AuthProvider>();
+    if (user.id == auth.profile?.id) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You cannot delete your own account while logged in.'),
+          backgroundColor: CinemaColors.accent,
+        ),
+      );
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: CinemaColors.card,
+        title: const Text('Delete User', style: TextStyle(color: CinemaColors.textPrimary)),
+        content: Text(
+          'Delete profile for ${user.email}?',
+          style: const TextStyle(color: CinemaColors.textSecondary),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: CinemaColors.accent),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    final error = await auth.deleteUserProfile(user.id);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error ?? 'User profile deleted'),
+        backgroundColor: error == null ? CinemaColors.success : CinemaColors.accent,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -52,11 +223,12 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     return Scaffold(
       backgroundColor: CinemaColors.bg,
       appBar: AppBar(
-        title: const Text('Manage Users'),
+        title: const Text('CinemaScope • Manage Users'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: auth.isUsersLoading ? null : auth.loadUsers,
+            tooltip: 'Create profile',
+            icon: const Icon(Icons.person_add_alt_1_rounded),
+            onPressed: auth.isUsersLoading ? null : _showCreateDialog,
           ),
         ],
       ),
@@ -97,52 +269,138 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                               border: Border.all(color: CinemaColors.divider),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            child: Row(
+                            child: Column(
                               children: [
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: user.isAdmin
-                                      ? CinemaColors.gold.withValues(alpha: 0.2)
-                                      : CinemaColors.info.withValues(alpha: 0.2),
-                                  child: Icon(
-                                    user.isAdmin
-                                        ? Icons.admin_panel_settings_rounded
-                                        : Icons.person_rounded,
-                                    size: 20,
-                                    color: user.isAdmin
-                                        ? CinemaColors.gold
-                                        : CinemaColors.info,
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        user.email,
-                                        style: const TextStyle(
-                                          color: CinemaColors.textPrimary,
-                                          fontWeight: FontWeight.w600,
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final compact = constraints.maxWidth < 430;
+                                    if (compact) {
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 20,
+                                                backgroundColor: user.isAdmin
+                                                    ? CinemaColors.gold.withValues(alpha: 0.2)
+                                                    : CinemaColors.info.withValues(alpha: 0.2),
+                                                child: Icon(
+                                                  user.isAdmin
+                                                      ? Icons.admin_panel_settings_rounded
+                                                      : Icons.person_rounded,
+                                                  size: 20,
+                                                  color: user.isAdmin
+                                                      ? CinemaColors.gold
+                                                      : CinemaColors.info,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      user.email,
+                                                      style: const TextStyle(
+                                                        color: CinemaColors.textPrimary,
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      isSelf
+                                                          ? 'This is your account'
+                                                          : 'User account',
+                                                      style: const TextStyle(
+                                                        color: CinemaColors.textMuted,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          _RoleDropdown(
+                                            currentRole: user.role.toLowerCase(),
+                                            disabled: auth.isRoleUpdating,
+                                            onSelected: (role) => _changeRole(user, role),
+                                          ),
+                                        ],
+                                      );
+                                    }
+                                    return Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: user.isAdmin
+                                              ? CinemaColors.gold.withValues(alpha: 0.2)
+                                              : CinemaColors.info.withValues(alpha: 0.2),
+                                          child: Icon(
+                                            user.isAdmin
+                                                ? Icons.admin_panel_settings_rounded
+                                                : Icons.person_rounded,
+                                            size: 20,
+                                            color: user.isAdmin
+                                                ? CinemaColors.gold
+                                                : CinemaColors.info,
+                                          ),
                                         ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        isSelf ? 'This is your account' : 'User account',
-                                        style: const TextStyle(
-                                          color: CinemaColors.textMuted,
-                                          fontSize: 12,
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                user.email,
+                                                style: const TextStyle(
+                                                  color: CinemaColors.textPrimary,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                isSelf
+                                                    ? 'This is your account'
+                                                    : 'User account',
+                                                style: const TextStyle(
+                                                  color: CinemaColors.textMuted,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                        const SizedBox(width: 12),
+                                        _RoleDropdown(
+                                          currentRole: user.role.toLowerCase(),
+                                          disabled: auth.isRoleUpdating,
+                                          onSelected: (role) => _changeRole(user, role),
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 ),
-                                const SizedBox(width: 12),
-                                _RoleDropdown(
-                                  currentRole: user.role.toLowerCase(),
-                                  disabled: auth.isRoleUpdating,
-                                  onSelected: (role) => _changeRole(user, role),
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    TextButton.icon(
+                                      onPressed: () => _showEditDialog(user),
+                                      icon: const Icon(Icons.edit_rounded, size: 16),
+                                      label: const Text('Edit'),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    TextButton.icon(
+                                      onPressed: () => _deleteUser(user),
+                                      icon: const Icon(Icons.delete_outline_rounded, size: 16, color: CinemaColors.accent),
+                                      label: const Text('Delete', style: TextStyle(color: CinemaColors.accent)),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -192,6 +450,65 @@ class _RoleDropdown extends StatelessWidget {
               : (v) {
                   if (v != null) onSelected(v);
                 },
+        ),
+      ),
+    );
+  }
+}
+
+class _InputField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+
+  const _InputField({required this.controller, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      style: const TextStyle(color: CinemaColors.textPrimary),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: CinemaColors.textMuted),
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: CinemaColors.divider),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: CinemaColors.gold),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleField extends StatelessWidget {
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  const _RoleField({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: CinemaColors.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: CinemaColors.divider),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          dropdownColor: CinemaColors.surface,
+          style: const TextStyle(color: CinemaColors.textPrimary),
+          iconEnabledColor: CinemaColors.textMuted,
+          items: const [
+            DropdownMenuItem(value: 'viewer', child: Text('Role: Viewer')),
+            DropdownMenuItem(value: 'admin', child: Text('Role: Admin')),
+          ],
+          onChanged: (v) {
+            if (v != null) onChanged(v);
+          },
         ),
       ),
     );

@@ -1853,3 +1853,41 @@ CREATE POLICY "Users can delete own watchlist" ON public.watchlist
 
 -- Index for fast lookups
 CREATE INDEX IF NOT EXISTS idx_watchlist_user ON public.watchlist(user_id);
+
+-- ============================================================
+-- VIEWER MOVIE FEEDBACK (user personal rating/metascore)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.viewer_movie_feedback (
+  id                BIGSERIAL PRIMARY KEY,
+  user_id           UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  movie_id          INTEGER NOT NULL REFERENCES public.fact_movies(movie_id) ON DELETE CASCADE,
+  viewer_rating     NUMERIC(3,1) NOT NULL,
+  viewer_metascore  INTEGER NOT NULL,
+  created_at        TIMESTAMPTZ DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (user_id, movie_id),
+  CONSTRAINT viewer_rating_range CHECK (viewer_rating >= 0 AND viewer_rating <= 10),
+  CONSTRAINT viewer_metascore_range CHECK (viewer_metascore >= 0 AND viewer_metascore <= 100)
+);
+
+ALTER TABLE public.viewer_movie_feedback ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own viewer feedback" ON public.viewer_movie_feedback;
+CREATE POLICY "Users can view own viewer feedback" ON public.viewer_movie_feedback
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert own viewer feedback" ON public.viewer_movie_feedback;
+CREATE POLICY "Users can insert own viewer feedback" ON public.viewer_movie_feedback
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own viewer feedback" ON public.viewer_movie_feedback;
+CREATE POLICY "Users can update own viewer feedback" ON public.viewer_movie_feedback
+  FOR UPDATE USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own viewer feedback" ON public.viewer_movie_feedback;
+CREATE POLICY "Users can delete own viewer feedback" ON public.viewer_movie_feedback
+  FOR DELETE USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_viewer_feedback_user ON public.viewer_movie_feedback(user_id);
+CREATE INDEX IF NOT EXISTS idx_viewer_feedback_movie ON public.viewer_movie_feedback(movie_id);

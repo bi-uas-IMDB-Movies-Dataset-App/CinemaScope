@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'supabase_service.dart';
+
 import '../../models/profile.dart';
+import 'supabase_service.dart';
 
 class AuthService {
   final _sb = SupabaseService();
@@ -29,11 +30,7 @@ class AuthService {
   }
 
   Future<Profile> fetchOrCreateProfile(String userId, String email) async {
-    final data = await _client
-        .from('profiles')
-        .select()
-        .eq('id', userId)
-        .maybeSingle();
+    final data = await _client.from('profiles').select().eq('id', userId).maybeSingle();
 
     if (data != null) return Profile.fromMap(data);
 
@@ -43,20 +40,60 @@ class AuthService {
       'role': 'viewer',
     });
 
-    final created =
-        await _client.from('profiles').select().eq('id', userId).single();
+    final created = await _client.from('profiles').select().eq('id', userId).single();
     return Profile.fromMap(created);
   }
 
   Future<List<Profile>> fetchProfiles() async {
-    final data = await _client
-        .from('profiles')
-        .select()
-        .order('created_at', ascending: false);
-    return (data as List).map((e) => Profile.fromMap(e)).toList();
+    final data = await _client.from('profiles').select().order('created_at', ascending: false);
+    final raw = (data as List).map((e) => Profile.fromMap(e)).toList();
+
+    // Defensive deduplication by id in case legacy data contains duplicates in view results.
+    final byId = <String, Profile>{};
+    for (final profile in raw) {
+      byId.putIfAbsent(profile.id, () => profile);
+    }
+    return byId.values.toList();
   }
 
   Future<void> updateRole(String userId, String role) async {
-    await _client.from('profiles').update({'role': role}).eq('id', userId);
+    await _client.from('profiles').update({'role': role}).eq('id', userId).select().single();
+  }
+
+  Future<void> createProfile({
+    required String userId,
+    required String email,
+    required String role,
+  }) async {
+    await _client.from('profiles').insert({
+      'id': userId,
+      'email': email,
+      'role': role,
+    });
+  }
+
+  Future<void> updateProfile({
+    required String userId,
+    required String email,
+    required String role,
+  }) async {
+    await _client.from('profiles').update({
+      'email': email,
+      'role': role,
+    }).eq('id', userId).select().single();
+  }
+
+  Future<void> deleteProfile(String userId) async {
+    final deleted = await _client
+        .from('profiles')
+        .delete()
+        .eq('id', userId)
+        .select('id')
+        .maybeSingle();
+    if (deleted == null) {
+      throw Exception(
+        'Delete failed on server. Ensure admin DELETE policy exists for profiles.',
+      );
+    }
   }
 }

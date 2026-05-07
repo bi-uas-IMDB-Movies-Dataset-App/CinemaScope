@@ -28,14 +28,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       backgroundColor: CinemaColors.bg,
       appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded,
-                color: CinemaColors.textSecondary),
-            onPressed: prov.refresh,
-          ),
-        ],
+        title: const Text('CinemaScope • Dashboard'),
       ),
       body: prov.isLoading
           ? const Center(

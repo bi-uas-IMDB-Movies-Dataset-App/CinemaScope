@@ -14,10 +14,13 @@ class SettingsPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: CinemaColors.bg,
-      appBar: AppBar(title: const Text('Profile')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+      appBar: AppBar(title: const Text('CinemaScope • Profile')),
+      body: RefreshIndicator(
+        color: CinemaColors.gold,
+        onRefresh: () => context.read<AuthProvider>().loadProfile(),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
           // Profile card
           CinemaCard(
             child: Row(
@@ -183,8 +186,9 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-        ],
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

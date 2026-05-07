@@ -227,8 +227,9 @@ class _BottomNavLayout extends StatelessWidget {
             currentIndex: index,
             onTap: onChanged,
             type: BottomNavigationBarType.fixed,
-            selectedFontSize: 12,
-            unselectedFontSize: 11,
+            selectedFontSize: 11,
+            unselectedFontSize: 10,
+            iconSize: 22,
             items: navItems.asMap().entries.map((e) {
               final showBadge = badgeTabIndex == e.key && badgeCount > 0;
               if (showBadge) {
@@ -279,7 +280,8 @@ class _SidebarLayout extends StatelessWidget {
     final extended = MediaQuery.of(context).size.width >= 1100;
 
     return Scaffold(
-      body: Row(
+      body: SafeArea(
+        child: Row(
         children: [
           Container(
             width: extended ? 220 : 72,
@@ -364,6 +366,7 @@ class _SidebarLayout extends StatelessWidget {
           const VerticalDivider(width: 1, color: CinemaColors.divider),
           Expanded(child: IndexedStack(index: index, children: pages)),
         ],
+      ),
       ),
     );
   }

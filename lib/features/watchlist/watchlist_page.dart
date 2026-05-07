@@ -29,7 +29,7 @@ class _WatchlistPageState extends State<WatchlistPage> {
     return Scaffold(
       backgroundColor: CinemaColors.bg,
       appBar: AppBar(
-        title: const Text('My Watchlist'),
+        title: const Text('CinemaScope • My Watchlist'),
         actions: [
           if (prov.movies.isNotEmpty)
             Padding(

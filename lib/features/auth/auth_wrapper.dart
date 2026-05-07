@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../providers/auth_provider.dart';
 import '../home/home_page.dart';
+import 'in_app_splash.dart';
 import 'login_page.dart';
 
 class AuthWrapper extends StatefulWidget {
@@ -20,6 +22,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
     return StreamBuilder(
       stream: auth.authChanges,
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const InAppSplash(subtitle: 'Preparing CinemaScope...');
+        }
+
         if (!auth.isLoggedIn) {
           _profileFuture = null;
           return const LoginPage();
@@ -30,9 +36,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           future: _profileFuture,
           builder: (context, snap) {
             if (snap.connectionState != ConnectionState.done) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
+              return const InAppSplash(subtitle: 'Loading your profile...');
             }
             if (auth.profile == null) {
               return Scaffold(

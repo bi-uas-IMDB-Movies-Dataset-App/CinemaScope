@@ -2,7 +2,11 @@
 import 'package:provider/provider.dart';
 
 import '../core/constants/cinema_colors.dart';
+import '../core/constants/genre_colors.dart';
+import '../core/services/viewer_feedback_service.dart';
 import '../models/movie.dart';
+import '../models/viewer_feedback.dart';
+import '../providers/auth_provider.dart';
 import '../providers/watchlist_provider.dart';
 import '../widgets/rating_badge.dart';
 
@@ -15,16 +19,26 @@ class MovieTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = GenreColors.gradient(movie.primaryGenre);
+    final accent = GenreColors.accent(movie.primaryGenre);
     return Material(
-      color: CinemaColors.card,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap ?? () => _openDetail(context, movie),
         borderRadius: BorderRadius.circular(12),
-        splashColor: CinemaColors.gold.withValues(alpha: 0.06),
+        splashColor: accent.withValues(alpha: 0.12),
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                colors.first.withValues(alpha: 0.62),
+                colors.last.withValues(alpha: 0.46),
+              ],
+            ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: CinemaColors.divider),
           ),
@@ -37,9 +51,7 @@ class MovieTile extends StatelessWidget {
                   child: Text(
                     '$rank',
                     style: TextStyle(
-                      color: rank! <= 10
-                          ? CinemaColors.gold
-                          : CinemaColors.textMuted,
+                      color: rank! <= 10 ? accent : CinemaColors.textMuted,
                       fontWeight: FontWeight.w800,
                       fontSize: rank! <= 9 ? 18 : 15,
                     ),
@@ -157,16 +169,22 @@ class _MetaRow extends StatelessWidget {
     if (movie.runtimeFormatted != 'â€”') parts.add(movie.runtimeFormatted);
     if (movie.certificate != null) parts.add(movie.certificate!);
 
-    return Row(
+    return Wrap(
+      spacing: 6,
+      runSpacing: 3,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: parts
           .asMap()
           .entries
           .expand<Widget>((e) => [
-                Text(e.value,
-                    style: const TextStyle(
-                        color: CinemaColors.textMuted, fontSize: 12)),
-                if (e.key < parts.length - 1) ...[
-                  const SizedBox(width: 6),
+                Text(
+                  e.value,
+                  style: const TextStyle(
+                    color: CinemaColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+                if (e.key < parts.length - 1)
                   Container(
                     width: 3,
                     height: 3,
@@ -175,8 +193,6 @@ class _MetaRow extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                ]
               ])
           .toList(),
     );
@@ -239,14 +255,154 @@ void _openDetail(BuildContext context, Movie movie) {
 // ============================================================================
 // MOVIE DETAIL PAGE (full screen)
 // ============================================================================
-class MovieDetailPage extends StatelessWidget {
+class MovieDetailPage extends StatefulWidget {
   final Movie movie;
   const MovieDetailPage({super.key, required this.movie});
 
   @override
+  State<MovieDetailPage> createState() => _MovieDetailPageState();
+}
+
+class _MovieDetailPageState extends State<MovieDetailPage> {
+  final ViewerFeedbackService _feedbackService = ViewerFeedbackService();
+  ViewerFeedback? _myFeedback;
+  bool _feedbackLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMyFeedback();
+  }
+
+  Future<void> _loadMyFeedback() async {
+    setState(() => _feedbackLoading = true);
+    try {
+      final feedback =
+          await _feedbackService.fetchMyFeedback(widget.movie.movieId);
+      if (!mounted) return;
+      setState(() {
+        _myFeedback = feedback;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _myFeedback = null;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _feedbackLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _openFeedbackEditor() async {
+    final initialRating = _myFeedback?.viewerRating ?? 7.5;
+    final initialMeta = _myFeedback?.viewerMetaScore?.toDouble() ?? 75.0;
+    double rating = (initialRating * 2).round() / 2;
+    double meta = initialMeta.clamp(0, 100);
+
+    final action = await showDialog<String>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          backgroundColor: CinemaColors.surface,
+          title: const Text('Your Viewer Review',
+              style: TextStyle(color: CinemaColors.textPrimary)),
+          content: SizedBox(
+            width: 360,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Viewer Rating: ${rating.toStringAsFixed(1)} / 10',
+                    style: const TextStyle(color: CinemaColors.textSecondary)),
+                Slider(
+                  value: rating,
+                  min: 0,
+                  max: 10,
+                  divisions: 20,
+                  activeColor: CinemaColors.gold,
+                  onChanged: (v) =>
+                      setStateDialog(() => rating = (v * 2).round() / 2),
+                ),
+                const SizedBox(height: 8),
+                Text('Viewer Metascore: ${meta.round()} / 100',
+                    style: const TextStyle(color: CinemaColors.textSecondary)),
+                Slider(
+                  value: meta,
+                  min: 0,
+                  max: 100,
+                  divisions: 100,
+                  activeColor: CinemaColors.info,
+                  onChanged: (v) => setStateDialog(() => meta = v),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            if (_myFeedback != null)
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'delete'),
+                child: const Text('Delete My Review',
+                    style: TextStyle(color: CinemaColors.accent)),
+              ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'cancel'),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  Navigator.pop(context, 'save:$rating:${meta.round()}'),
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (action == null || action == 'cancel') return;
+    try {
+      if (action == 'delete') {
+        await _feedbackService.deleteMyFeedback(widget.movie.movieId);
+      } else if (action.startsWith('save:')) {
+        final parts = action.split(':');
+        final parsedRating = double.tryParse(parts[1]) ?? rating;
+        final parsedMeta = int.tryParse(parts[2]) ?? meta.round();
+        await _feedbackService.upsertMyFeedback(
+          movieId: widget.movie.movieId,
+          viewerRating: parsedRating,
+          viewerMetaScore: parsedMeta,
+        );
+      }
+      await _loadMyFeedback();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Viewer feedback saved'),
+          backgroundColor: CinemaColors.success,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: CinemaColors.accent,
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final movie = widget.movie;
     final saved =
         context.watch<WatchlistProvider>().isInWatchlist(movie.movieId);
+    final isViewer =
+        (context.watch<AuthProvider>().profile?.role.toLowerCase() ?? 'viewer') ==
+            'viewer';
 
     return Scaffold(
       backgroundColor: CinemaColors.bg,
@@ -316,7 +472,13 @@ class MovieDetailPage extends StatelessWidget {
                   // Rating row
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: _RatingRow(movie: movie),
+                    child: _RatingRow(
+                      movie: movie,
+                      isViewer: isViewer,
+                      feedback: _myFeedback,
+                      feedbackLoading: _feedbackLoading,
+                      onEditFeedback: _openFeedbackEditor,
+                    ),
                   ),
                   const SizedBox(height: 20),
 
@@ -514,7 +676,17 @@ class _MovieSubtitle extends StatelessWidget {
 // â”€â”€ IMDb + Metascore rating row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _RatingRow extends StatelessWidget {
   final Movie movie;
-  const _RatingRow({required this.movie});
+  final bool isViewer;
+  final ViewerFeedback? feedback;
+  final bool feedbackLoading;
+  final VoidCallback onEditFeedback;
+  const _RatingRow({
+    required this.movie,
+    required this.isViewer,
+    required this.feedback,
+    required this.feedbackLoading,
+    required this.onEditFeedback,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -609,6 +781,51 @@ class _RatingRow extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+        if (isViewer) ...[
+          const SizedBox(width: 12),
+          InkWell(
+            onTap: onEditFeedback,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: CinemaColors.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: CinemaColors.divider),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your Rating: ${feedback?.viewerRating?.toStringAsFixed(1) ?? '-'}',
+                    style: const TextStyle(
+                      color: CinemaColors.gold,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Your Meta: ${feedback?.viewerMetaScore?.toString() ?? '-'}',
+                    style: const TextStyle(
+                      color: CinemaColors.info,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    feedbackLoading ? 'Loading...' : 'Tap to rate',
+                    style: const TextStyle(
+                      color: CinemaColors.textMuted,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -763,3 +980,4 @@ class _SectionLabel extends StatelessWidget {
     );
   }
 }
+
