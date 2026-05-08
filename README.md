@@ -606,7 +606,7 @@ Poster visual yang merangkum proyek CinemaScope secara ringkas dan informatif:
 
 ![Footer](https://capsule-render.vercel.app/api?type=waving&height=120&color=0:f5c518,100:0f172a&section=footer)
 
-**CinemaScope** &nbsp;·&nbsp; Dibangun oleh Kelompok ?  
+**CinemaScope** &nbsp;·&nbsp; Dibangun oleh Tim Invincible 
 *UAS Business Intelligence — Implementasi BI End-to-End*
 
 [![Kaggle](https://img.shields.io/badge/Dataset-Kaggle-20BEFF?style=flat-square&logo=kaggle&logoColor=white)](https://www.kaggle.com/datasets/harshitshankhdhar/imdb-dataset-of-top-1000-movies-and-tv-shows)
