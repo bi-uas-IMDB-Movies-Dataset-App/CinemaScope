@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/cinema_colors.dart';
@@ -53,54 +53,62 @@ class _ExplorePageState extends State<ExplorePage> {
       appBar: AppBar(
         title: const Text('CinemaScope • Explore BI'),
       ),
-      body: prov.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: CinemaColors.gold),
-            )
-          : prov.error != null
-              ? _ErrorView(error: prov.error!, onRetry: prov.refresh)
-              : RefreshIndicator(
-                  color: CinemaColors.gold,
-                  onRefresh: prov.refresh,
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                    children: [
-                      _QuickStats(stats: prov.stats),
-                      const SizedBox(height: 18),
-                      const _SectionHeader(
-                        title: 'OLAP Lab',
-                        icon: Icons.hub_rounded,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const _ExploreBackdrop(),
+          prov.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: CinemaColors.gold),
+                )
+              : prov.error != null
+                  ? _ErrorView(error: prov.error!, onRetry: prov.refresh)
+                  : RefreshIndicator(
+                      color: CinemaColors.gold,
+                      onRefresh: prov.refresh,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 20),
+                        children: [
+                          const _ExploreTicker(),
+                          const SizedBox(height: 10),
+                          _QuickStats(stats: prov.stats),
+                          const SizedBox(height: 12),
+                          const _SectionHeader(
+                            title: 'OLAP Lab',
+                            icon: Icons.hub_rounded,
+                          ),
+                          const SizedBox(height: 8),
+                          _OlapLab(
+                            movies: prov.olapMovies,
+                            dimensions: _dimensions,
+                            metrics: _metrics,
+                            selectedDimension: _selectedDimension,
+                            selectedMetric: _selectedMetric,
+                            topN: _topN,
+                            minRating: _minRating,
+                            advancedMode: _advancedMode,
+                            onAdvancedModeChanged: (v) =>
+                                setState(() => _advancedMode = v),
+                            onDimensionChanged: (v) =>
+                                setState(() => _selectedDimension = v),
+                            onMetricChanged: (v) =>
+                                setState(() => _selectedMetric = v),
+                            onTopNChanged: (v) => setState(() => _topN = v),
+                            onMinRatingChanged: (v) =>
+                                setState(() => _minRating = v),
+                          ),
+                          const SizedBox(height: 12),
+                          const _SectionHeader(
+                            title: 'Top Box Office',
+                            icon: Icons.attach_money_rounded,
+                          ),
+                          const SizedBox(height: 8),
+                          _TopGrossingList(movies: prov.topGrossing),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      _OlapLab(
-                        movies: prov.olapMovies,
-                        dimensions: _dimensions,
-                        metrics: _metrics,
-                        selectedDimension: _selectedDimension,
-                        selectedMetric: _selectedMetric,
-                        topN: _topN,
-                        minRating: _minRating,
-                        advancedMode: _advancedMode,
-                        onAdvancedModeChanged: (v) =>
-                            setState(() => _advancedMode = v),
-                        onDimensionChanged: (v) =>
-                            setState(() => _selectedDimension = v),
-                        onMetricChanged: (v) =>
-                            setState(() => _selectedMetric = v),
-                        onTopNChanged: (v) => setState(() => _topN = v),
-                        onMinRatingChanged: (v) =>
-                            setState(() => _minRating = v),
-                      ),
-                      const SizedBox(height: 20),
-                      const _SectionHeader(
-                        title: 'Top Box Office',
-                        icon: Icons.attach_money_rounded,
-                      ),
-                      const SizedBox(height: 12),
-                      _TopGrossingList(movies: prov.topGrossing),
-                    ],
-                  ),
-                ),
+                    ),
+        ],
+      ),
     );
   }
 }
@@ -322,39 +330,46 @@ class _OlapLab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text(
-                'Mode Analisis',
-                style: TextStyle(
-                  color: CinemaColors.textPrimary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
-              ),
-              const Spacer(),
-              SegmentedButton<bool>(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return CinemaColors.gold.withValues(alpha: 0.18);
-                    }
-                    return CinemaColors.surface;
-                  }),
-                  side: const WidgetStatePropertyAll(
-                    BorderSide(color: CinemaColors.divider),
-                  ),
-                ),
-                segments: const [
-                  ButtonSegment<bool>(value: false, label: Text('Simple')),
-                  ButtonSegment<bool>(value: true, label: Text('Advanced')),
-                ],
-                selected: {advancedMode},
-                onSelectionChanged: (set) {
-                  onAdvancedModeChanged(set.first);
-                },
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 420;
+              return compact
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Mode Analisis',
+                          style: TextStyle(
+                            color: CinemaColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _ModeToggle(
+                          advancedMode: advancedMode,
+                          onAdvancedModeChanged: onAdvancedModeChanged,
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        const Text(
+                          'Mode Analisis',
+                          style: TextStyle(
+                            color: CinemaColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const Spacer(),
+                        _ModeToggle(
+                          advancedMode: advancedMode,
+                          onAdvancedModeChanged: onAdvancedModeChanged,
+                        ),
+                      ],
+                    );
+            },
           ),
           const SizedBox(height: 10),
           const Text(
@@ -792,6 +807,135 @@ class _DropdownField extends StatelessWidget {
   }
 }
 
+class _ExploreBackdrop extends StatelessWidget {
+  const _ExploreBackdrop();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned(
+          top: -70,
+          right: -50,
+          child: _Blob(color: CinemaColors.cyan.withValues(alpha: 0.16), size: 190),
+        ),
+        Positioned(
+          top: 220,
+          left: -70,
+          child: _Blob(color: CinemaColors.accent.withValues(alpha: 0.15), size: 220),
+        ),
+        Positioned(
+          bottom: -120,
+          right: 40,
+          child: _Blob(color: CinemaColors.teal.withValues(alpha: 0.15), size: 240),
+        ),
+      ],
+    );
+  }
+}
+
+class _Blob extends StatelessWidget {
+  final Color color;
+  final double size;
+
+  const _Blob({required this.color, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [color, color.withValues(alpha: 0)],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExploreTicker extends StatelessWidget {
+  const _ExploreTicker();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget tag(IconData icon, String text, Color color) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.68),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: CinemaColors.divider),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 6),
+            Text(
+              text,
+              style: const TextStyle(
+                color: CinemaColors.textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          tag(Icons.query_stats_rounded, 'OLAP Live', CinemaColors.cyan),
+          const SizedBox(width: 8),
+          tag(Icons.psychology_rounded, 'Smart Slice', CinemaColors.gold),
+          const SizedBox(width: 8),
+          tag(Icons.trending_up_rounded, 'Trend Radar', CinemaColors.teal),
+          const SizedBox(width: 8),
+          tag(Icons.data_usage_rounded, 'Metric Boost', CinemaColors.accent),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeToggle extends StatelessWidget {
+  final bool advancedMode;
+  final ValueChanged<bool> onAdvancedModeChanged;
+
+  const _ModeToggle({
+    required this.advancedMode,
+    required this.onAdvancedModeChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<bool>(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return CinemaColors.gold.withValues(alpha: 0.18);
+          }
+          return CinemaColors.surface;
+        }),
+        side: const WidgetStatePropertyAll(
+          BorderSide(color: CinemaColors.divider),
+        ),
+      ),
+      segments: const [
+        ButtonSegment<bool>(value: false, label: Text('Simple')),
+        ButtonSegment<bool>(value: true, label: Text('Advanced')),
+      ],
+      selected: {advancedMode},
+      onSelectionChanged: (set) => onAdvancedModeChanged(set.first),
+    );
+  }
+}
+
 class _OlapRow {
   final String keyName;
   final List<Movie> movies;
@@ -915,3 +1059,5 @@ class _TopGrossingList extends StatelessWidget {
     );
   }
 }
+
+

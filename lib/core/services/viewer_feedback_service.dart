@@ -1,4 +1,4 @@
-import '../../models/viewer_feedback.dart';
+﻿import '../../models/viewer_feedback.dart';
 import 'supabase_service.dart';
 
 class ViewerFeedbackService {
@@ -50,3 +50,4 @@ class ViewerFeedbackService {
         .timeout(const Duration(seconds: 8));
   }
 }
+

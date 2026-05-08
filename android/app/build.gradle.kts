@@ -4,18 +4,20 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+layout.buildDirectory.set(rootProject.layout.projectDirectory.dir("../build/app"))
+
 android {
     namespace = "com.cinemascope.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -41,4 +43,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("com.google.android.play:core:1.10.3")
 }

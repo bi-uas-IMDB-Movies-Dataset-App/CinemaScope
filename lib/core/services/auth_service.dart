@@ -1,5 +1,6 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../constants/supabase_config.dart';
 import '../../models/profile.dart';
 import 'supabase_service.dart';
 
@@ -72,6 +73,32 @@ class AuthService {
     });
   }
 
+  Future<void> createUserWithPassword({
+    required String email,
+    required String password,
+    required String role,
+  }) async {
+    final tempClient = SupabaseClient(
+      SupabaseConfig.url,
+      SupabaseConfig.anonKey,
+      authOptions: const FlutterAuthClientOptions(
+        detectSessionInUri: false,
+      ),
+    );
+
+    final result = await tempClient.auth.signUp(email: email, password: password);
+    final user = result.user;
+    if (user == null) {
+      throw Exception('Create user failed');
+    }
+
+    await _client.from('profiles').upsert({
+      'id': user.id,
+      'email': email,
+      'role': role,
+    });
+  }
+
   Future<void> updateProfile({
     required String userId,
     required String email,
@@ -97,3 +124,4 @@ class AuthService {
     }
   }
 }
+

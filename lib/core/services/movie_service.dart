@@ -1,4 +1,4 @@
-import 'supabase_service.dart';
+﻿import 'supabase_service.dart';
 import '../../models/movie.dart';
 
 class MovieService {
@@ -233,3 +233,4 @@ class MovieService {
     return 'Average (<7.0)';
   }
 }
+

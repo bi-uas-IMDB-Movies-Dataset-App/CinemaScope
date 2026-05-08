@@ -30,43 +30,147 @@ class _DashboardPageState extends State<DashboardPage> {
       appBar: AppBar(
         title: const Text('CinemaScope • Dashboard'),
       ),
-      body: prov.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: CinemaColors.gold))
-          : prov.error != null
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          color: CinemaColors.accent, size: 48),
-                      const SizedBox(height: 8),
-                      Text(prov.error!,
-                          style: const TextStyle(
-                              color: CinemaColors.textSecondary)),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                          onPressed: prov.refresh, child: const Text('Retry')),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  color: CinemaColors.gold,
-                  onRefresh: prov.refresh,
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                    children: [
-                      _KpiRow(stats: prov.stats),
-                      const SizedBox(height: 20),
-                      _RatingDistributionChart(stats: prov.stats),
-                      const SizedBox(height: 20),
-                      _GenrePieChart(stats: prov.stats),
-                      const SizedBox(height: 20),
-                      _DecadeBarChart(stats: prov.stats),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
-                ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const _DecoratedBackdrop(),
+          prov.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: CinemaColors.gold))
+              : prov.error != null
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.error_outline,
+                              color: CinemaColors.accent, size: 48),
+                          const SizedBox(height: 8),
+                          Text(prov.error!,
+                              style: const TextStyle(
+                                  color: CinemaColors.textSecondary)),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                              onPressed: prov.refresh, child: const Text('Retry')),
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
+                      color: CinemaColors.gold,
+                      onRefresh: prov.refresh,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 20),
+                        children: [
+                          const _SignalStrip(),
+                          const SizedBox(height: 10),
+                          _KpiRow(stats: prov.stats),
+                          const SizedBox(height: 12),
+                          _RatingDistributionChart(stats: prov.stats),
+                          const SizedBox(height: 12),
+                          _GenrePieChart(stats: prov.stats),
+                          const SizedBox(height: 12),
+                          _DecadeBarChart(stats: prov.stats),
+                          const SizedBox(height: 4),
+                        ],
+                      ),
+                    ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DecoratedBackdrop extends StatelessWidget {
+  const _DecoratedBackdrop();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned(
+          top: -90,
+          left: -40,
+          child: _Orb(color: CinemaColors.cyan.withValues(alpha: 0.18), size: 210),
+        ),
+        Positioned(
+          top: 180,
+          right: -70,
+          child: _Orb(color: CinemaColors.accent.withValues(alpha: 0.15), size: 200),
+        ),
+        Positioned(
+          bottom: -100,
+          left: 80,
+          child: _Orb(color: CinemaColors.teal.withValues(alpha: 0.16), size: 240),
+        ),
+      ],
+    );
+  }
+}
+
+class _Orb extends StatelessWidget {
+  final Color color;
+  final double size;
+
+  const _Orb({required this.color, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [color, color.withValues(alpha: 0)],
+        ),
+      ),
+    );
+  }
+}
+
+class _SignalStrip extends StatelessWidget {
+  const _SignalStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget chip(IconData icon, String text, Color color) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.68),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: CinemaColors.divider),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 5),
+            Text(
+              text,
+              style: const TextStyle(
+                color: CinemaColors.textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          chip(Icons.bolt_rounded, 'Live Insights', CinemaColors.cyan),
+          const SizedBox(width: 8),
+          chip(Icons.local_fire_department_rounded, 'Hot Metrics', CinemaColors.accent),
+          const SizedBox(width: 8),
+          chip(Icons.auto_awesome_rounded, 'Cine Trends', CinemaColors.gold),
+          const SizedBox(width: 8),
+          chip(Icons.hub_rounded, 'Data Pulse', CinemaColors.teal),
+        ],
+      ),
     );
   }
 }
@@ -84,7 +188,7 @@ class _KpiRow extends StatelessWidget {
     final masterpieces = stats['masterpieces'] ?? 0;
     final topGenres = stats['topGenres'] as List? ?? [];
     final topGenreName =
-        topGenres.isNotEmpty ? topGenres.first.key as String : 'â€”';
+        topGenres.isNotEmpty ? topGenres.first.key as String : '—';
 
     final kpis = [
       _Kpi('Total Films', '$total', Icons.movie_rounded, CinemaColors.info),
@@ -130,9 +234,23 @@ class _KpiCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: CinemaColors.card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: CinemaColors.divider),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: kpi.color.withValues(alpha: 0.25)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            CinemaColors.cardHover.withValues(alpha: 0.95),
+            CinemaColors.card.withValues(alpha: 0.82),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: kpi.color.withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,12 +259,12 @@ class _KpiCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: kpi.color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  color: kpi.color.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(kpi.icon, color: kpi.color, size: 16),
+                child: Icon(kpi.icon, color: kpi.color, size: 18),
               ),
               const Spacer(),
             ],
@@ -154,7 +272,7 @@ class _KpiCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(kpi.value,
               style: TextStyle(
-                  color: kpi.color, fontWeight: FontWeight.w800, fontSize: 22),
+                  color: kpi.color, fontWeight: FontWeight.w800, fontSize: 24),
               overflow: TextOverflow.ellipsis),
           Text(kpi.label,
               style:
@@ -550,3 +668,5 @@ class _DecadeBarChart extends StatelessWidget {
     );
   }
 }
+
+

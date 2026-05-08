@@ -1,7 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 
 import '../core/constants/cinema_colors.dart';
-import '../core/constants/genre_colors.dart';
 
 class GenreChip extends StatelessWidget {
   final String label;
@@ -17,46 +16,42 @@ class GenreChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isAll = label.toLowerCase() == 'all';
-    final colors = isAll
-        ? [CinemaColors.gold.withValues(alpha: 0.22), CinemaColors.surface]
-        : GenreColors.gradient(label);
-    final chipAccent = isAll ? CinemaColors.gold : GenreColors.accent(label);
-
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: selected
-                ? [
-                    colors.first.withValues(alpha: 0.9),
-                    colors.last.withValues(alpha: 0.85),
-                  ]
-                : [
-                    colors.first.withValues(alpha: 0.34),
-                    colors.last.withValues(alpha: 0.26),
-                  ],
-          ),
+          color: selected
+              ? Colors.black.withValues(alpha: 0.86)
+              : Colors.black.withValues(alpha: 0.72),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? chipAccent : CinemaColors.divider,
-            width: selected ? 1.5 : 1,
+            color: selected
+                ? CinemaColors.cyan.withValues(alpha: 0.8)
+                : CinemaColors.divider,
+            width: selected ? 1.4 : 1,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: CinemaColors.cyan.withValues(alpha: 0.18),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? chipAccent : CinemaColors.textSecondary,
+            color: selected ? CinemaColors.cyan : CinemaColors.textSecondary,
             fontSize: 12,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
       ),
     );
   }
 }
+

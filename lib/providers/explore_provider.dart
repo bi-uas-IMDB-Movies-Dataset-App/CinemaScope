@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/services/movie_service.dart';
 import '../models/movie.dart';
 
@@ -37,3 +37,4 @@ class ExploreProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+

@@ -2,7 +2,6 @@
 import 'package:provider/provider.dart';
 
 import '../core/constants/cinema_colors.dart';
-import '../core/constants/genre_colors.dart';
 import '../core/services/viewer_feedback_service.dart';
 import '../models/movie.dart';
 import '../models/viewer_feedback.dart';
@@ -19,15 +18,14 @@ class MovieTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = GenreColors.gradient(movie.primaryGenre);
-    final accent = GenreColors.accent(movie.primaryGenre);
+    
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap ?? () => _openDetail(context, movie),
-        borderRadius: BorderRadius.circular(12),
-        splashColor: accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+        splashColor: CinemaColors.cyan.withValues(alpha: 0.1),
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -35,12 +33,19 @@ class MovieTile extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                colors.first.withValues(alpha: 0.62),
-                colors.last.withValues(alpha: 0.46),
+                Colors.black.withValues(alpha: 0.88),
+                CinemaColors.surface.withValues(alpha: 0.78),
               ],
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: CinemaColors.divider),
+            boxShadow: [
+              BoxShadow(
+                color: CinemaColors.cyan.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -51,7 +56,7 @@ class MovieTile extends StatelessWidget {
                   child: Text(
                     '$rank',
                     style: TextStyle(
-                      color: rank! <= 10 ? accent : CinemaColors.textMuted,
+                      color: rank! <= 10 ? CinemaColors.cyan : CinemaColors.textMuted,
                       fontWeight: FontWeight.w800,
                       fontSize: rank! <= 9 ? 18 : 15,
                     ),
@@ -69,15 +74,25 @@ class MovieTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      movie.seriesTitle,
-                      style: const TextStyle(
-                        color: CinemaColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            movie.seriesTitle,
+                            style: const TextStyle(
+                              color: CinemaColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.auto_awesome_rounded, color: CinemaColors.gold, size: 14),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.bolt_rounded, color: CinemaColors.cyan, size: 14),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     _MetaRow(movie: movie),
@@ -166,7 +181,7 @@ class _MetaRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final parts = <String>[];
     if (movie.releasedYear != null) parts.add('${movie.releasedYear}');
-    if (movie.runtimeFormatted != 'â€”') parts.add(movie.runtimeFormatted);
+    if (movie.runtimeFormatted != '—') parts.add(movie.runtimeFormatted);
     if (movie.certificate != null) parts.add(movie.certificate!);
 
     return Wrap(
@@ -641,7 +656,7 @@ class _HeroBackground extends StatelessWidget {
   }
 }
 
-// â”€â”€ Subtitle: year Â· runtime Â· certificate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Subtitle: year · runtime · certificate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _MovieSubtitle extends StatelessWidget {
   final Movie movie;
   const _MovieSubtitle({required this.movie});
@@ -650,7 +665,7 @@ class _MovieSubtitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final parts = <String>[];
     if (movie.releasedYear != null) parts.add('${movie.releasedYear}');
-    if (movie.runtimeFormatted != 'â€”') parts.add(movie.runtimeFormatted);
+    if (movie.runtimeFormatted != '—') parts.add(movie.runtimeFormatted);
     if (movie.certificate != null) parts.add(movie.certificate!);
     if (movie.era != null) parts.add(movie.era!);
 
@@ -664,7 +679,7 @@ class _MovieSubtitle extends StatelessWidget {
                     style: const TextStyle(
                         color: CinemaColors.textMuted, fontSize: 13)),
                 if (e.key < parts.length - 1)
-                  const Text('Â·',
+                  const Text('·',
                       style: TextStyle(
                           color: CinemaColors.textMuted, fontSize: 13)),
               ])
@@ -708,7 +723,7 @@ class _RatingRow extends StatelessWidget {
                       color: CinemaColors.gold, size: 22),
                   const SizedBox(width: 6),
                   Text(
-                    movie.imdbRating?.toStringAsFixed(1) ?? 'â€”',
+                    movie.imdbRating?.toStringAsFixed(1) ?? '—',
                     style: const TextStyle(
                       color: CinemaColors.gold,
                       fontWeight: FontWeight.w800,
@@ -793,8 +808,15 @@ class _RatingRow extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: CinemaColors.card,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: CinemaColors.divider),
+                borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: CinemaColors.divider),
+            boxShadow: [
+              BoxShadow(
+                color: CinemaColors.cyan.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -856,17 +878,17 @@ class _GenreRow extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
-                  color: CinemaColors.gold.withValues(alpha: 0.08),
+                  color: Colors.black.withValues(alpha: 0.72),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                      color: CinemaColors.gold.withValues(alpha: 0.2)),
+                      color: CinemaColors.divider),
                 ),
                 child: Text(
                   g.trim(),
                   style: const TextStyle(
-                    color: CinemaColors.gold,
+                    color: CinemaColors.textSecondary,
                     fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ))
@@ -932,8 +954,15 @@ class _StatCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: CinemaColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: CinemaColors.divider),
+        borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: CinemaColors.divider),
+            boxShadow: [
+              BoxShadow(
+                color: CinemaColors.cyan.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
       ),
       child: Row(
         children: [
@@ -980,4 +1009,8 @@ class _SectionLabel extends StatelessWidget {
     );
   }
 }
+
+
+
+
 

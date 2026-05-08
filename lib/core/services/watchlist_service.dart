@@ -1,4 +1,4 @@
-import 'supabase_service.dart';
+﻿import 'supabase_service.dart';
 import '../../models/movie.dart';
 
 class WatchlistService {
@@ -57,3 +57,4 @@ class WatchlistService {
     }
   }
 }
+

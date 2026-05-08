@@ -2,7 +2,7 @@
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
-import '../home/home_page.dart';
+import 'package:cinemascope/home_shell.dart';
 import 'in_app_splash.dart';
 import 'login_page.dart';
 
@@ -66,3 +66,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
     );
   }
 }
+
+
+

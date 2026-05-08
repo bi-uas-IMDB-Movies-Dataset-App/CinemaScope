@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/constants/cinema_colors.dart';
 
 class RatingBadge extends StatelessWidget {
@@ -29,3 +29,4 @@ class RatingBadge extends StatelessWidget {
     );
   }
 }
+

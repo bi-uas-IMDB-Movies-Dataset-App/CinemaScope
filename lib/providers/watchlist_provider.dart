@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/services/watchlist_service.dart';
 import '../models/movie.dart';
 
@@ -67,3 +67,4 @@ class WatchlistProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'theme/cinema_theme.dart';
 import 'features/auth/auth_wrapper.dart';
@@ -30,3 +30,4 @@ class CinemaScopeApp extends StatelessWidget {
     );
   }
 }
+

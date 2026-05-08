@@ -65,3 +65,4 @@ class InAppSplash extends StatelessWidget {
     );
   }
 }
+

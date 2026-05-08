@@ -1,4 +1,4 @@
-class Profile {
+﻿class Profile {
   final String id;
   final String email;
   final String role;
@@ -15,3 +15,4 @@ class Profile {
 
   bool get isAdmin => role.toLowerCase() == 'admin';
 }
+

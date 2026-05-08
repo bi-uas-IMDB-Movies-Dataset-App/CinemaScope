@@ -1,4 +1,4 @@
-class ViewerFeedback {
+﻿class ViewerFeedback {
   final int movieId;
   final double? viewerRating;
   final int? viewerMetaScore;
@@ -21,3 +21,4 @@ class ViewerFeedback {
     );
   }
 }
+

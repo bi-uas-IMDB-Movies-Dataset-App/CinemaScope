@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/services/auth_service.dart';
@@ -134,6 +134,32 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<String?> createUserWithPassword({
+    required String email,
+    required String password,
+    required String role,
+  }) async {
+    isUsersLoading = true;
+    error = null;
+    notifyListeners();
+    try {
+      await _service.createUserWithPassword(
+        email: email.trim().toLowerCase(),
+        password: password,
+        role: role,
+      );
+      await loadUsers();
+      return null;
+    } catch (e) {
+      final msg = e.toString();
+      error = msg;
+      return msg;
+    } finally {
+      isUsersLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<String?> updateUserProfile({
     required String userId,
     required String email,
@@ -190,3 +216,4 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+

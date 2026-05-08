@@ -1,4 +1,4 @@
-class Movie {
+﻿class Movie {
   final int movieId;
   final String seriesTitle;
   final int? releasedYear;
@@ -96,3 +96,4 @@ class Movie {
     return '\$${gross!.toStringAsFixed(0)}';
   }
 }
+

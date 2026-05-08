@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/constants/cinema_colors.dart';
 
 /// A shimmer-animated list of placeholder movie tiles.
@@ -173,3 +173,4 @@ class _PulseBoxState extends State<_PulseBox>
   Widget build(BuildContext context) =>
       FadeTransition(opacity: _fade, child: widget.child);
 }
+

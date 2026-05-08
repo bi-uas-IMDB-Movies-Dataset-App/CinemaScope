@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class GenreColors {
   static List<Color> gradient(String? genre) {
@@ -32,3 +32,4 @@ class GenreColors {
     return Color.lerp(colors.first, colors.last, 0.35) ?? colors.first;
   }
 }
+

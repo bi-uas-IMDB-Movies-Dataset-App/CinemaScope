@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
@@ -22,38 +22,10 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     });
   }
 
-  Future<void> _changeRole(Profile user, String nextRole) async {
-    final auth = context.read<AuthProvider>();
-    final selfId = auth.profile?.id;
-
-    if (user.role.toLowerCase() == nextRole.toLowerCase()) {
-      return;
-    }
-
-    if (selfId == user.id && nextRole != 'admin') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You cannot demote your own admin account while logged in.'),
-          backgroundColor: CinemaColors.accent,
-        ),
-      );
-      return;
-    }
-
-    final error = await auth.changeUserRole(userId: user.id, role: nextRole);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(error ?? 'Role updated for ${user.email}'),
-        backgroundColor: error == null ? CinemaColors.success : CinemaColors.accent,
-      ),
-    );
-  }
-
   Future<void> _showCreateDialog() async {
     final auth = context.read<AuthProvider>();
-    final idCtl = TextEditingController();
     final emailCtl = TextEditingController();
+    final passwordCtl = TextEditingController();
     String role = 'viewer';
 
     final ok = await showDialog<bool>(
@@ -66,9 +38,13 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _InputField(controller: idCtl, label: 'User ID (UUID)'),
-                const SizedBox(height: 10),
                 _InputField(controller: emailCtl, label: 'Email'),
+                const SizedBox(height: 10),
+                _InputField(
+                  controller: passwordCtl,
+                  label: 'Password',
+                  obscureText: true,
+                ),
                 const SizedBox(height: 10),
                 _RoleField(
                   value: role,
@@ -86,17 +62,17 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     );
 
     if (ok != true) return;
-    if (idCtl.text.trim().isEmpty || emailCtl.text.trim().isEmpty) {
+    if (emailCtl.text.trim().isEmpty || passwordCtl.text.trim().isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User ID and email are required'), backgroundColor: CinemaColors.accent),
+        const SnackBar(content: Text('Email and password are required'), backgroundColor: CinemaColors.accent),
       );
       return;
     }
 
-    final error = await auth.createUserProfile(
-      userId: idCtl.text,
+    final error = await auth.createUserWithPassword(
       email: emailCtl.text,
+      password: passwordCtl.text,
       role: role,
     );
     if (!mounted) return;
@@ -124,8 +100,6 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(user.id, style: const TextStyle(color: CinemaColors.textMuted, fontSize: 11)),
-                const SizedBox(height: 10),
                 _InputField(controller: emailCtl, label: 'Email'),
                 const SizedBox(height: 10),
                 _RoleField(
@@ -223,7 +197,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     return Scaffold(
       backgroundColor: CinemaColors.bg,
       appBar: AppBar(
-        title: const Text('CinemaScope • Manage Users'),
+        title: const Text('Manage Users'),
         actions: [
           IconButton(
             tooltip: 'Create profile',
@@ -324,11 +298,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                                             ],
                                           ),
                                           const SizedBox(height: 10),
-                                          _RoleDropdown(
-                                            currentRole: user.role.toLowerCase(),
-                                            disabled: auth.isRoleUpdating,
-                                            onSelected: (role) => _changeRole(user, role),
-                                          ),
+                                          _RoleBadge(role: user.role),
                                         ],
                                       );
                                     }
@@ -376,11 +346,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                                           ),
                                         ),
                                         const SizedBox(width: 12),
-                                        _RoleDropdown(
-                                          currentRole: user.role.toLowerCase(),
-                                          disabled: auth.isRoleUpdating,
-                                          onSelected: (role) => _changeRole(user, role),
-                                        ),
+                                        _RoleBadge(role: user.role),
                                       ],
                                     );
                                   },
@@ -412,60 +378,22 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
   }
 }
 
-class _RoleDropdown extends StatelessWidget {
-  final String currentRole;
-  final bool disabled;
-  final ValueChanged<String> onSelected;
-
-  const _RoleDropdown({
-    required this.currentRole,
-    required this.disabled,
-    required this.onSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: CinemaColors.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: CinemaColors.divider),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: currentRole == 'admin' ? 'admin' : 'viewer',
-          isDense: true,
-          isExpanded: false,
-          menuMaxHeight: 200,
-          dropdownColor: CinemaColors.surface,
-          style: const TextStyle(color: CinemaColors.textPrimary, fontSize: 13),
-          iconEnabledColor: CinemaColors.textMuted,
-          items: const [
-            DropdownMenuItem(value: 'viewer', child: Text('Viewer')),
-            DropdownMenuItem(value: 'admin', child: Text('Admin')),
-          ],
-          onChanged: disabled
-              ? null
-              : (v) {
-                  if (v != null) onSelected(v);
-                },
-        ),
-      ),
-    );
-  }
-}
-
 class _InputField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
+  final bool obscureText;
 
-  const _InputField({required this.controller, required this.label});
+  const _InputField({
+    required this.controller,
+    required this.label,
+    this.obscureText = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      obscureText: obscureText,
       style: const TextStyle(color: CinemaColors.textPrimary),
       decoration: InputDecoration(
         labelText: label,
@@ -475,6 +403,33 @@ class _InputField extends StatelessWidget {
         ),
         focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: CinemaColors.gold),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleBadge extends StatelessWidget {
+  final String role;
+
+  const _RoleBadge({required this.role});
+
+  @override
+  Widget build(BuildContext context) {
+    final isAdmin = role.toLowerCase() == 'admin';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: CinemaColors.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: CinemaColors.divider),
+      ),
+      child: Text(
+        isAdmin ? 'Admin' : 'Viewer',
+        style: const TextStyle(
+          color: CinemaColors.textPrimary,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -514,3 +469,4 @@ class _RoleField extends StatelessWidget {
     );
   }
 }
+
