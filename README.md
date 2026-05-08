@@ -597,9 +597,8 @@ Poster visual yang merangkum proyek CinemaScope secara ringkas dan informatif:
 | Nama | NIM | Role |
 |---|---|---|
 | Sayid Rafi A'thaya | 2409116036 | Project Manager 💡 |
+| Muhammad Ilyasa' 'Izzudin | 2409116030 | Frontend / UI 🎨 |
 | Mochammad Rezky Ramadhan | 2409116029 | Backend / Database ⚙️ |
-| Adella Putri | 2409116006 | Frontend / UI 🎨 |
-| Dhita Olivia Ramadhayanti Kusuma | 2409116040 | Documentation / Report 🧾 |
 
 ---
 
