@@ -35,7 +35,7 @@
 - [🧪 Testing & Smoke Test](#-testing--smoke-test)
 - [📦 Deployment](#-deployment)
 - [📊 Sumber Daya Proyek](#-sumber-daya-proyek)
-- [👥 Anggota Tim — Sidang Berapi🔥](#-anggota-tim--sidang-berapi)
+- [👥 Anggota Tim — Invincible 🔥](#-anggota-tim--sidang-berapi)
 
 ---
 
@@ -592,7 +592,7 @@ Poster visual yang merangkum proyek CinemaScope secara ringkas dan informatif:
 
 ---
 
-## 👥 Anggota Tim — Sidang Berapi🔥
+## 👥 Anggota Tim — Invincible 🔥
 
 | Nama | NIM | Role |
 |---|---|---|
