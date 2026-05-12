@@ -14,7 +14,7 @@
 |---|---|
 | 🗃️ **Dataset Kotor (Kaggle)** | [IMDB Top 1000 Movies & TV Shows](https://www.kaggle.com/datasets/harshitshankhdhar/imdb-dataset-of-top-1000-movies-and-tv-shows) |
 | 🧹 **Data Bersih (Google Colab)** | [Lihat Notebook Pembersihan Data](https://colab.research.google.com/drive/1Qt-ZTBZjdUjU0tHvRJT6GbTEAFmLCNLK?usp=sharing) |
-| 📄 **Laporan Proyek (PDF)** | *(insert link Google Drive laporan di sini)* |
+| 📄 **Laporan Proyek (PDF)** | ntar diisi |
 | 🖼️ **Poster Proyek** | [Poster Cinemascope](https://drive.google.com/file/d/1MXwWzetHHXq4dvNC6g_n4X1qS7LUFF7O/view?usp=sharing) |
 
 ---
